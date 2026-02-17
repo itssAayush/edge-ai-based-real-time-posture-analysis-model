@@ -1,9 +1,0 @@
-# Virtual Environment
-gym_env/
-
-# Python cache
-__pycache__/
-*.pyc
-
-# Mac files
-.DS_Store
