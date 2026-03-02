@@ -1,9 +1,10 @@
 import cv2
-import mediapipe as mp
+from pose_detector import PoseDetector
+from exercises.pushup import PushUp
 
-mp_pose = mp.solutions.pose
-pose = mp_pose.Pose()
-mp_drawing = mp.solutions.drawing_utils
+# Initialize detector and exercise
+detector = PoseDetector()
+exercise = PushUp()
 
 cap = cv2.VideoCapture(0)
 
@@ -12,20 +13,25 @@ while cap.isOpened():
     if not ret:
         break
 
-    image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    results = pose.process(image)
-    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    # Detect pose
+    image, results = detector.detect_pose(frame)
+    landmarks = detector.get_landmarks(results)
 
-    if results.pose_landmarks:
-        mp_drawing.draw_landmarks(
-            image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS
-        )
+    if landmarks:
+        count, angle = exercise.update(landmarks)
 
-    cv2.imshow("Edge AI Pose Test", image)
+        # Display rep count
+        cv2.putText(image, f'Reps: {count}', (10, 50),
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
+        # Display angle (for debugging)
+        cv2.putText(image, f'Angle: {int(angle)}', (10, 100),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 0, 0), 2)
+
+    cv2.imshow("Edge AI Gym", image)
 
     if cv2.waitKey(10) & 0xFF == ord('q'):
         break
 
 cap.release()
 cv2.destroyAllWindows()
-
